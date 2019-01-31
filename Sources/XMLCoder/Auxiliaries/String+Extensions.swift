@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension StringProtocol where Self.Index == String.Index {
+extension StringProtocol where Self.Index == String.Index  {
     func escape(_ characterSet: [(character: String, escapedCharacter: String)]) -> String {
         var string = String(self)
 
