@@ -52,51 +52,94 @@ private struct FooEmptyKeyed: Codable, DynamicNodeEncoding {
     }
 }
 
+private let previewXML =
+    """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <app_preview display_target="iOS-6.5-in" position="1">
+    <preview_image_time format="24/999 1000/nonDrop">00:00:17:01</preview_image_time>
+    </app_preview>
+    """.data(using: .utf8)!
+
+private struct AppPreview: Codable, Equatable {
+    var displayTarget: String
+    var position: Int
+    var previewImageTime: PreviewImageTime
+
+    enum CodingKeys: String, CodingKey {
+        case displayTarget = "display_target"
+        case position
+        case previewImageTime = "preview_image_time"
+    }
+}
+
+private struct PreviewImageTime: Codable, Equatable, DynamicNodeEncoding {
+    var format: String
+    var value: String
+
+    enum CodingKeys: String, CodingKey {
+        case format
+        case value
+    }
+
+    static func nodeEncoding(forKey key: CodingKey) -> XMLEncoder.NodeEncoding {
+        switch key {
+        case CodingKeys.format:
+            return .attribute
+        default:
+            return .element
+        }
+    }
+}
+
 final class AttributedIntrinsicTest: XCTestCase {
-    func testEncode() {
+    func testEncode() throws {
         let encoder = XMLEncoder()
         encoder.outputFormatting = []
 
         let foo1 = FooEmptyKeyed(id: "123", unkeyedValue: 456)
 
         let header = XMLHeader(version: 1.0, encoding: "UTF-8")
-        do {
-            let encoded = try encoder.encode(foo1, withRootKey: "foo", header: header)
-            let xmlString = String(data: encoded, encoding: .utf8)
-            XCTAssertNotNil(xmlString)
-            print(xmlString!)
+        let encoded = try encoder.encode(foo1, withRootKey: "foo", header: header)
+        let xmlString = String(data: encoded, encoding: .utf8)
+        XCTAssertNotNil(xmlString)
 
-            // Test string equivlancy
-            let encodedXML = xmlString!.trimmingCharacters(in: .whitespacesAndNewlines)
-            let originalXML = String(data: fooXML, encoding: .utf8)!.trimmingCharacters(in: .whitespacesAndNewlines)
-            XCTAssertEqual(encodedXML, originalXML)
-        } catch {
-            print("Test threw error: " + error.localizedDescription)
-            XCTFail(error.localizedDescription)
-        }
+        // Test string equivalency
+        let encodedXML = xmlString!.trimmingCharacters(in: .whitespacesAndNewlines)
+        let originalXML = String(data: fooXML, encoding: .utf8)!.trimmingCharacters(in: .whitespacesAndNewlines)
+        XCTAssertEqual(encodedXML, originalXML)
     }
 
-    func testDecode() {
-        do {
-            let decoder = XMLDecoder()
-            decoder.errorContextLength = 10
+    func testDecode() throws {
+        let decoder = XMLDecoder()
+        decoder.errorContextLength = 10
 
-            let foo1 = try decoder.decode(Foo.self, from: fooXML)
-            XCTAssertEqual(foo1.id, "123")
-            XCTAssertEqual(foo1.value, "456")
+        let foo1 = try decoder.decode(Foo.self, from: fooXML)
+        XCTAssertEqual(foo1.id, "123")
+        XCTAssertEqual(foo1.value, "456")
 
-            let foo2 = try decoder.decode(FooEmptyKeyed.self, from: fooXML)
-            XCTAssertEqual(foo2.id, "123")
-            XCTAssertEqual(foo2.unkeyedValue, 456)
-        } catch {
-            print("Test threw error: " + error.localizedDescription)
-            XCTFail(error.localizedDescription)
-        }
+        let foo2 = try decoder.decode(FooEmptyKeyed.self, from: fooXML)
+        XCTAssertEqual(foo2.id, "123")
+        XCTAssertEqual(foo2.unkeyedValue, 456)
+    }
+
+    func testDecodePreview() throws {
+        let decoder = XMLDecoder()
+
+        let preview = try decoder.decode(AppPreview.self, from: previewXML)
+        XCTAssertEqual(AppPreview(
+            displayTarget: "iOS-6.5-in",
+            position: 1,
+            previewImageTime: PreviewImageTime(
+                format: "24/999 1000/nonDrop",
+                value: "00:00:17:01"
+            )
+        ), preview)
     }
 
     static var allTests = [
         ("testEncode", testEncode),
         ("testDecode", testDecode),
+        ("testDecodePreview", testDecodePreview),
     ]
 }
 
@@ -184,42 +227,30 @@ private enum FooEnum: Equatable, Codable {
 }
 
 final class AttributedEnumIntrinsicTest: XCTestCase {
-    func testEncode() {
+    func testEncode() throws {
         let encoder = XMLEncoder()
         encoder.outputFormatting = []
 
         let foo1 = Foo2(number: [FooNumber(type: FooEnum.string("ABC")), FooNumber(type: FooEnum.int(123))])
 
         let header = XMLHeader(version: 1.0, encoding: "UTF-8")
-        do {
-            let encoded = try encoder.encode(foo1, withRootKey: "foo", header: header)
-            let xmlString = String(data: encoded, encoding: .utf8)
-            XCTAssertNotNil(xmlString)
-            print(xmlString!)
-
-            // Test string equivlancy
-            let encodedXML = xmlString!.trimmingCharacters(in: .whitespacesAndNewlines)
-            let originalXML = String(data: attributedEnumXML, encoding: .utf8)!.trimmingCharacters(in: .whitespacesAndNewlines)
-            XCTAssertEqual(encodedXML, originalXML)
-        } catch {
-            print("Test threw error: " + error.localizedDescription)
-            XCTFail(error.localizedDescription)
-        }
+        let encoded = try encoder.encode(foo1, withRootKey: "foo", header: header)
+        let xmlString = String(data: encoded, encoding: .utf8)
+        XCTAssertNotNil(xmlString)
+        // Test string equivalency
+        let encodedXML = xmlString!.trimmingCharacters(in: .whitespacesAndNewlines)
+        let originalXML = String(data: attributedEnumXML, encoding: .utf8)!.trimmingCharacters(in: .whitespacesAndNewlines)
+        XCTAssertEqual(encodedXML, originalXML)
     }
 
     // TODO: Fix decoding
-//    func testDecode() {
-//        do {
-//            let decoder = XMLDecoder()
-//            decoder.errorContextLength = 10
+//    func testDecode() throws {
+//        let decoder = XMLDecoder()
+//        decoder.errorContextLength = 10
 //
-//            let foo = try decoder.decode(Foo2.self, from: attributedEnumXML)
-//            XCTAssertEqual(foo.number[0].type, FooEnum.string("ABC"))
-//            XCTAssertEqual(foo.number[1].type, FooEnum.int(123))
-//        } catch {
-//            print("Test threw error: " + error.localizedDescription)
-//            XCTFail(error.localizedDescription)
-//        }
+//        let foo = try decoder.decode(Foo2.self, from: attributedEnumXML)
+//        XCTAssertEqual(foo.number[0].type, FooEnum.string("ABC"))
+//        XCTAssertEqual(foo.number[1].type, FooEnum.int(123))
 //    }
 
     static var allTests = [

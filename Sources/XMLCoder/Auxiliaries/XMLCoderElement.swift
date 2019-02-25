@@ -44,10 +44,12 @@ struct XMLCoderElement: Equatable {
         elements.append(element)
     }
 
+    // FIXME: this should be split into separate functions and
+    // thoroughtly tested
     func flatten() -> KeyedBox {
         let attributes = self.attributes.mapValues { StringBox($0) }
 
-        var keyedElements: [String: Box] = elements.reduce([String: Box]()) { (result, element) -> [String: Box] in
+        var keyedElements = elements.reduce([String: Box]()) { (result, element) -> [String: Box] in
             var result = result
             let key = element.key
 
@@ -73,7 +75,7 @@ struct XMLCoderElement: Equatable {
                     case var unkeyedBox as UnkeyedBox:
                         unkeyedBox.append(content)
                         result[key] = unkeyedBox
-                    case let box?:
+                    case let box? where !hasValue:
                         result[key] = UnkeyedBox([box, content])
                     default:
                         result[key] = content
@@ -93,7 +95,7 @@ struct XMLCoderElement: Equatable {
             return result
         }
 
-        // Handle attributed unkeyed valye <foo attr="bar">zap</foo>
+        // Handle attributed unkeyed value <foo attr="bar">zap</foo>
         // Value should be zap. Detect only when no other elements exist
         if keyedElements.isEmpty, let value = value {
             keyedElements["value"] = StringBox(value)
