@@ -509,10 +509,10 @@
 				LastUpgradeCheck = 9999;
 				TargetAttributes = {
 					"XMLCoder::XMLCoder" = {
-						LastSwiftMigration = 1010;
+						LastSwiftMigration = 1150;
 					};
 					"XMLCoder::XMLCoderTests" = {
-						LastSwiftMigration = 1010;
+						LastSwiftMigration = 1150;
 					};
 				};
 			};
@@ -521,6 +521,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = OBJ_5;
@@ -757,7 +758,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGET_NAME = XMLCoder;
 			};
 			name = Debug;
@@ -781,7 +782,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGET_NAME = XMLCoder;
 			};
 			name = Release;
@@ -832,7 +833,7 @@
 				OTHER_LDFLAGS = "$(inherited)";
 				OTHER_SWIFT_FLAGS = "$(inherited)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGET_NAME = XMLCoderTests;
 			};
 			name = Debug;
@@ -853,7 +854,7 @@
 				OTHER_LDFLAGS = "$(inherited)";
 				OTHER_SWIFT_FLAGS = "$(inherited)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 				TARGET_NAME = XMLCoderTests;
 			};
 			name = Release;
